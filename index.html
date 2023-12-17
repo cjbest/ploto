@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLOTO Target Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@^1.16.0/dist/pdf-lib.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            margin-right: 10px;
+        }
+
+        .input-group input {
+            margin-right: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>PLOTO Target Generator</h1>
+    <form id="inputForm">
+        <div class="input-group">
+            <label for="range">Range:</label>
+            <input type="text" id="range" name="range" value="300y" required>
+        </div>
+        <div class="input-group">
+            <label for="minuteScale">Minute Scale Factor:</label>
+            <input type="text" id="minuteScale" name="minuteScale" value='1.0' required>
+        </div>
+        <div class="input-group">
+            <label for="pageInchesPerMinute">Page inches per minute:</label>
+            <input type="text" id="pageInchesPerMinute" name="pageInchesPerMinute" value="0.75" required>
+        </div>
+        <h2>Circles</h2>
+        <div id="circle-inputs">
+            <!-- Dynamically add circle inputs here -->
+        </div>
+        <button type="button" onclick="generatePDF()">Generate PDF</button>
+    </form>
+
+    <script>
+        // Create 6 circle inputs
+        const circleInputsContainer = document.getElementById('circle-inputs');
+        for (let i = 1; i <= 6; i++) {
+            const inputGroup = document.createElement('div');
+            inputGroup.classList.add('input-group');
+
+            const label = document.createElement('label');
+            label.textContent = `Circle ${i} Diameter (inches):`;
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.id = `circle${i}`;
+            input.name = `circle${i}`;
+            input.required = true;
+
+            inputGroup.appendChild(label);
+            inputGroup.appendChild(input);
+            circleInputsContainer.appendChild(inputGroup);
+        }
+
+        function drawGrid(page, { rangeInches=300*36, pageInchesPerMinute=0.75, sightMinuteScale=1.0 }) {
+
+
+        }
+
+        // Function to generate and download the PDF
+        async function generatePDF() {
+            // Get form values
+            const rangeInput = document.getElementById('range').value;
+            const rangeUnit = rangeInput.slice(-1)
+
+            let range;
+            if (rangeUnit.toLowerCase() === 'y') {
+                range = parseFloat(rangeInput.slice(0, -1)) * 36; // Convert yards to inches
+            } else if (rangeInput.toLowerCase().endsWith('m')) {
+                range = parseFloat(rangeInput.slice(0, -1)) * 39.3701; // Convert meters to inches
+            } else {
+                alert("please enter a range like 300y")
+                return;
+            }
+            const minute = parseFloat(document.getElementById('minuteScale').value);
+            const circleDiameters = [];
+            for (let i = 1; i <= 6; i++) {
+                const radius = document.getElementById(`circle${i}`).value;
+                if (radius) circleDiameters.push(parseFloat(radius));
+            }
+
+            // Generate PDF
+            const { PDFDocument, rgb } = PDFLib;
+            const pdfDoc = await PDFDocument.create();
+            const page = pdfDoc.addPage();
+
+            // Use default PDF points (1 point = 1/72 inch)
+            const widthPoints = 11 * 72;
+            const heightPoints = 8.5 * 72;
+            page.setSize(widthPoints, heightPoints);
+
+            // Draw grid lines
+            const gridSpacingPoints = 0.75 * 72;
+            for (let y = heightPoints/2%gridSpacingPoints; y < heightPoints; y += gridSpacingPoints) {
+                page.drawLine({
+                    start: { x: 0, y: y },
+                    end: { x: widthPoints, y: y },
+                    thickness: 0.5,
+                    color: rgb(0, 0, 0),
+                    opacity: 1
+                });
+            }
+
+            for (let x = widthPoints/2%gridSpacingPoints; x < widthPoints; x += gridSpacingPoints) {
+                page.drawLine({
+                    start: { x: x, y: 0 },
+                    end: { x: x, y: heightPoints },
+                    thickness: 0.5,
+                    color: rgb(0, 0, 0),
+                    opacity: 1
+                });
+            }
+
+
+            // Draw circles
+            circleDiameters.forEach((radius, index) => {
+                const radiusPoints = radius * 72; // Convert inches to points
+                page.drawCircle({
+                    x: widthPoints / 2,
+                    y: heightPoints / 2,
+                    size: radiusPoints,
+                    borderColor: rgb(0, 0, 0),
+                    borderWidth: 1
+                });
+            });
+
+            // Serialize the PDF
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Create a link to download the PDF
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobUrl;
+            downloadLink.download = 'ICFRA_Target.pdf';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+</body>
+</html>
