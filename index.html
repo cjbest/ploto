@@ -59,7 +59,7 @@
     /*
     TODO:
      - [X] Plot ticks (find trim rectangle size)
-     - [ ] One ring darker
+     - [X] One ring darker
      - [ ] Label
      - [ ] units -- inches or mm for target
 
@@ -87,8 +87,16 @@
             input.value = DEFAULT_RINGS[i - 1];
         }
 
+        const radio = document.createElement('input')
+        radio.type = 'radio';
+        radio.id = `aimingMark`;
+        radio.name = `aimingMark`;
+        radio.value = i-1;
+        radio.checked = i===5; //default;
+
         inputGroup.appendChild(label);
         inputGroup.appendChild(input);
+        inputGroup.appendChild(radio);
         circleInputsContainer.appendChild(inputGroup);
     }
 
@@ -105,6 +113,9 @@
         // Get form values
         const rangeInput = document.getElementById('range').value;
         const rangeUnit = rangeInput.slice(-1)
+
+        const aimingMark = parseInt(document.querySelector(`input[name="aimingMark"]:checked`).value)
+        console.log("AIMING MARK:", aimingMark);
 
         let rangeIcnhes;
         if (rangeUnit.toLowerCase() === 'y') {
@@ -230,7 +241,7 @@
                 y: heightPoints / 2,
                 size: radiusPoints,
                 borderColor: rgb(0, 0, 0),
-                borderWidth: 1
+                borderWidth: index == aimingMark ? 2.5 : 1
             });
         });
 
