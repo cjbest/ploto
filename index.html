@@ -56,6 +56,17 @@
 
 <script>
 
+    /*
+    TODO:
+     - [X] Plot ticks (find trim rectangle size)
+     - [ ] One ring darker
+     - [ ] Label
+     - [ ] units -- inches or mm for target
+
+     Nice to have:
+     - [ ] Local storage of configurations?
+     */
+
     const DEFAULT_RINGS = [2.56, 5.12, 10.24, 15.35, 22.04]; // 300y
 
     // Create 6 circle inputs
@@ -84,6 +95,10 @@
     const RADIANS_PER_MINUTE = 0.000290888;
     const MILLIMETERS_PER_INCH = 25.4;
     const INCHES_PER_METER = 39.3701;
+
+    const TICK_AREA_WIDTH_INCHES = 7;
+    const TICK_AREA_HEIGHT_INCHES = 7.6;
+    const TICK_LENGTH_INCHES = 0.33;
 
     // Function to generate and download the PDF
     async function generatePDF() {
@@ -126,6 +141,12 @@
         const heightPoints = 8.5 * 72;
         page.setSize(widthPoints, heightPoints);
 
+        const tickXStart = (widthPoints - TICK_AREA_WIDTH_INCHES * 72) / 2;
+        const tickXEnd = tickXStart + TICK_AREA_WIDTH_INCHES * 72;
+        const tickYStart = (heightPoints - TICK_AREA_HEIGHT_INCHES * 72) / 2;
+        const tickYEnd = tickYStart + TICK_AREA_HEIGHT_INCHES * 72;
+        const tickL = TICK_LENGTH_INCHES * 72;
+
         // Draw grid lines
         const gridSpacingPoints = pageInchesPerSightMinute * 72;
         for (let y = heightPoints / 2 % gridSpacingPoints; y < heightPoints; y += gridSpacingPoints) {
@@ -136,6 +157,24 @@
                 color: rgb(0, 0, 0),
                 opacity: 1
             });
+
+            const tickY = y + gridSpacingPoints / 2;
+            if (tickY >= tickYStart && tickY <= tickYEnd) {
+                page.drawLine({
+                    start: {x: tickXStart, y: tickY},
+                    end: {x: tickXStart + tickL, y: tickY},
+                    thickness: 0.5,
+                    color: (rgb(0, 0, 0)),
+                    opacity: 1
+                })
+                page.drawLine({
+                    start: {x: tickXEnd - tickL, y: tickY},
+                    end: {x: tickXEnd, y: tickY},
+                    thickness: 0.5,
+                    color: (rgb(0, 0, 0)),
+                    opacity: 1
+                })
+            }
         }
 
         for (let x = widthPoints / 2 % gridSpacingPoints; x < widthPoints; x += gridSpacingPoints) {
@@ -146,6 +185,24 @@
                 color: rgb(0, 0, 0),
                 opacity: 1
             });
+
+            const tickX = x + gridSpacingPoints / 2;
+            if (tickX >= tickXStart && tickX <= tickXEnd) {
+                page.drawLine({
+                    start: {x: tickX, y: tickYStart},
+                    end: {x: tickX, y: tickYStart + tickL},
+                    thickness: 0.5,
+                    color: rgb(0, 0, 0),
+                    opacity: 1
+                })
+                page.drawLine({
+                    start: {x: tickX, y: tickYEnd - tickL},
+                    end: {x: tickX, y: tickYEnd},
+                    thickness: 0.5,
+                    color: rgb(0, 0, 0),
+                    opacity: 1
+                })
+            }
         }
 
         // diagonal guides
