@@ -43,22 +43,20 @@
             <label for="pageInchesPerMinute">Page inches per minute:</label>
             <input type="text" id="pageInchesPerMinute" name="pageInchesPerMinute" value="0.75" required>
         </div>
-        <h2>Circles</h2>
+        <h2>Rings</h2>
         <div id="circle-inputs">
             <!-- Dynamically add circle inputs here -->
+        </div>
+        <div class="input-group">
+            <label for="targetFrame">Target Frame:</label>
+            <input type="text" id="targetFrame" name="targetFrame" value="48" required>
         </div>
         <button type="button" onclick="generatePDF()">Generate PDF</button>
     </form>
 
     <script>
 
-        /* test values @ 300y
-               2.56
-               5.12
-               10.24
-               15.35
-               22.04
-         */
+        const DEFAULT_RINGS = [2.56, 5.12, 10.24, 15.35, 22.04]; // 300y
 
         // Create 6 circle inputs
         const circleInputsContainer = document.getElementById('circle-inputs');
@@ -67,13 +65,16 @@
             inputGroup.classList.add('input-group');
 
             const label = document.createElement('label');
-            label.textContent = `Circle ${i} Diameter (inches):`;
+            label.textContent = `Ring ${i} Diameter (inches):`;
 
             const input = document.createElement('input');
             input.type = 'number';
             input.id = `circle${i}`;
             input.name = `circle${i}`;
             input.required = true;
+            if (i-1<DEFAULT_RINGS.length) {
+                input.value=DEFAULT_RINGS[i-1];
+            }
 
             inputGroup.appendChild(label);
             inputGroup.appendChild(input);
@@ -174,6 +175,19 @@
                     borderColor: rgb(0, 0, 0),
                     borderWidth: 1
                 });
+            });
+
+            // targetFrame rect
+            const targetFrameInches = parseFloat(document.getElementById('targetFrame').value);
+            const targetFramePoints = targetFrameInches * pageInchesPerTargetInch * 72;
+
+            page.drawRectangle({
+                x: widthPoints / 2 - targetFramePoints / 2,
+                y: heightPoints / 2 - targetFramePoints / 2,
+                width: targetFramePoints,
+                height: targetFramePoints,
+                borderColor: rgb(0, 0, 0),
+                borderWidth: 1
             });
 
             // Serialize the PDF
