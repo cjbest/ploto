@@ -51,6 +51,15 @@
     </form>
 
     <script>
+
+        /* test values @ 300y
+               2.56
+               5.12
+               10.24
+               15.35
+               22.04
+         */
+
         // Create 6 circle inputs
         const circleInputsContainer = document.getElementById('circle-inputs');
         for (let i = 1; i <= 6; i++) {
@@ -72,6 +81,8 @@
         }
 
         const RADIANS_PER_MINUTE = 0.000290888;
+        const MILLIMETERS_PER_INCH = 25.4;
+        const INCHES_PER_METER = 39.3701;
 
         // Function to generate and download the PDF
         async function generatePDF() {
@@ -83,7 +94,7 @@
             if (rangeUnit.toLowerCase() === 'y') {
                 rangeIcnhes = parseFloat(rangeInput.slice(0, -1)) * 36; // Convert yards to inches
             } else if (rangeInput.toLowerCase().endsWith('m')) {
-                rangeIcnhes = parseFloat(rangeInput.slice(0, -1)) * 39.3701; // Convert meters to inches
+                rangeIcnhes = parseFloat(rangeInput.slice(0, -1)) * INCHES_PER_METER; // Convert meters to inches
             } else {
                 alert("please enter a range like 300y")
                 return;
@@ -135,6 +146,22 @@
                     opacity: 1
                 });
             }
+
+            // diagonal guides
+            page.drawLine({
+                start: { x: (widthPoints-heightPoints)/2, y: 0},
+                end: { x: widthPoints - (widthPoints-heightPoints)/2, y: heightPoints},
+                thickness: 0.5,
+                color: rgb(0, 0, 0),
+                opacity: 1
+            })
+            page.drawLine({
+                start: { x: widthPoints - (widthPoints-heightPoints)/2, y: 0},
+                end: { x: (widthPoints-heightPoints)/2, y: heightPoints},
+                thickness: 0.5,
+                color: rgb(0, 0, 0),
+                opacity: 1
+            })
 
 
             // Draw circles
