@@ -105,7 +105,7 @@
 
         const targetInchesPerMinute = Math.tan(RADIANS_PER_MINUTE) * rangeIcnhes
         const targetInchesPerSightMinute = targetInchesPerMinute * minuteScale;
-        const pageInchesPerTargetInch = pageInchesPerSightMinute / targetInchesPerMinute;
+        const pageInchesPerTargetInch = pageInchesPerSightMinute / targetInchesPerSightMinute;
 
         console.log({pageInchesPerSightMinute, targetInchesPerSightMinute, pageInchesPerTargetInch});
 
