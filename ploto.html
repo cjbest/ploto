@@ -61,7 +61,7 @@
      - [X] Plot ticks (find trim rectangle size)
      - [X] One ring darker
      - [ ] Label
-     - [ ] units -- inches or mm for target
+     - [X] units -- inches or mm for target
 
      Nice to have:
      - [ ] Local storage of configurations?
@@ -76,15 +76,15 @@
         inputGroup.classList.add('input-group');
 
         const label = document.createElement('label');
-        label.textContent = `Ring ${i} Diameter (inches):`;
+        label.textContent = `Ring ${i} Diameter`;
 
         const input = document.createElement('input');
-        input.type = 'number';
+        input.type = 'text';
         input.id = `circle${i}`;
         input.name = `circle${i}`;
         input.required = true;
         if (i - 1 < DEFAULT_RINGS.length) {
-            input.value = DEFAULT_RINGS[i - 1];
+            input.value = DEFAULT_RINGS[i - 1] + 'in';
         }
 
         const radio = document.createElement('input')
@@ -111,35 +111,22 @@
     // Function to generate and download the PDF
     async function generatePDF() {
         // Get form values
-        const rangeInput = document.getElementById('range').value;
-        const rangeUnit = rangeInput.slice(-1)
-
+        const rangeInches = parseUnitsToInches(document.getElementById('range').value);
         const aimingMark = parseInt(document.querySelector(`input[name="aimingMark"]:checked`).value)
-        console.log("AIMING MARK:", aimingMark);
 
-        let rangeIcnhes;
-        if (rangeUnit.toLowerCase() === 'y') {
-            rangeIcnhes = parseFloat(rangeInput.slice(0, -1)) * 36; // Convert yards to inches
-        } else if (rangeInput.toLowerCase().endsWith('m')) {
-            rangeIcnhes = parseFloat(rangeInput.slice(0, -1)) * INCHES_PER_METER; // Convert meters to inches
-        } else {
-            alert("please enter a range like 300y")
-            return;
-        }
         const minuteScale = parseFloat(document.getElementById('minuteScale').value);
-        const pageInchesPerSightMinute = parseFloat(document.getElementById('pageInchesPerMinute').value);
+        const pageInchesPerSightMinute = parseUnitsToInches(document.getElementById('pageInchesPerMinute').value);
 
-        const targetInchesPerMinute = Math.tan(RADIANS_PER_MINUTE) * rangeIcnhes
+        const targetInchesPerMinute = Math.tan(RADIANS_PER_MINUTE) * rangeInches
         const targetInchesPerSightMinute = targetInchesPerMinute * minuteScale;
         const pageInchesPerTargetInch = pageInchesPerSightMinute / targetInchesPerSightMinute;
 
         console.log({pageInchesPerSightMinute, targetInchesPerSightMinute, pageInchesPerTargetInch});
 
-
         const circleDiameters = [];
         for (let i = 1; i <= 6; i++) {
             const radius = document.getElementById(`circle${i}`).value;
-            if (radius) circleDiameters.push(parseFloat(radius));
+            if (radius) circleDiameters.push(parseUnitsToInches(radius));
         }
 
         // Generate PDF
@@ -271,6 +258,34 @@
         downloadLink.click();
         document.body.removeChild(downloadLink);
     }
+
+    function parseUnitsToInches(input) {
+        const unitsToInches = {
+            in: 1,
+            '"': 1,
+            mm: 1 / 25.4,
+            cm: 1 / 2.54,
+            m: 100 / 2.54,
+            yd: 36,
+            y: 36,
+            ft: 12
+        };
+
+        // Extract the value and the unit from the input string
+        const valueMatch = input.match(/\d+(\.\d+)?/);
+        const value = valueMatch ? parseFloat(valueMatch[0]) : null;
+
+        const unitMatch = input.match(/[a-zA-Z""]+/);
+        const unit = unitMatch ? unitMatch[0] : 'in';
+
+        if (value === null || !unitsToInches.hasOwnProperty(unit)) {
+            throw new Error('Invalid input.');
+        }
+
+        // Convert the value to inches
+        return value * (unitsToInches[unit] || 1);
+    }
+
 </script>
 </body>
 </html>
