@@ -71,10 +71,7 @@
             circleInputsContainer.appendChild(inputGroup);
         }
 
-        function drawGrid(page, { rangeInches=300*36, pageInchesPerMinute=0.75, sightMinuteScale=1.0 }) {
-
-
-        }
+        const RADIANS_PER_MINUTE = 0.000290888;
 
         // Function to generate and download the PDF
         async function generatePDF() {
@@ -82,16 +79,25 @@
             const rangeInput = document.getElementById('range').value;
             const rangeUnit = rangeInput.slice(-1)
 
-            let range;
+            let rangeIcnhes;
             if (rangeUnit.toLowerCase() === 'y') {
-                range = parseFloat(rangeInput.slice(0, -1)) * 36; // Convert yards to inches
+                rangeIcnhes = parseFloat(rangeInput.slice(0, -1)) * 36; // Convert yards to inches
             } else if (rangeInput.toLowerCase().endsWith('m')) {
-                range = parseFloat(rangeInput.slice(0, -1)) * 39.3701; // Convert meters to inches
+                rangeIcnhes = parseFloat(rangeInput.slice(0, -1)) * 39.3701; // Convert meters to inches
             } else {
                 alert("please enter a range like 300y")
                 return;
             }
-            const minute = parseFloat(document.getElementById('minuteScale').value);
+            const minuteScale = parseFloat(document.getElementById('minuteScale').value);
+            const pageInchesPerSightMinute = parseFloat(document.getElementById('pageInchesPerMinute').value);
+
+            const targetInchesPerMinute = Math.tan(RADIANS_PER_MINUTE) * rangeIcnhes
+            const targetInchesPerSightMinute = targetInchesPerMinute * minuteScale;
+            const pageInchesPerTargetInch = pageInchesPerSightMinute / targetInchesPerMinute;
+
+            console.log({pageInchesPerSightMinute, targetInchesPerSightMinute, pageInchesPerTargetInch});
+
+
             const circleDiameters = [];
             for (let i = 1; i <= 6; i++) {
                 const radius = document.getElementById(`circle${i}`).value;
@@ -109,7 +115,7 @@
             page.setSize(widthPoints, heightPoints);
 
             // Draw grid lines
-            const gridSpacingPoints = 0.75 * 72;
+            const gridSpacingPoints = pageInchesPerSightMinute * 72;
             for (let y = heightPoints/2%gridSpacingPoints; y < heightPoints; y += gridSpacingPoints) {
                 page.drawLine({
                     start: { x: 0, y: y },
@@ -132,8 +138,8 @@
 
 
             // Draw circles
-            circleDiameters.forEach((radius, index) => {
-                const radiusPoints = radius * 72; // Convert inches to points
+            circleDiameters.forEach((diameter, index) => {
+                const radiusPoints = diameter / 2 * pageInchesPerTargetInch * 72
                 page.drawCircle({
                     x: widthPoints / 2,
                     y: heightPoints / 2,
