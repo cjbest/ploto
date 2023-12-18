@@ -78,7 +78,7 @@
         <label for="targetName">Target Type:</label>
         <input type="text" id="targetName" name="targetName" value="DCRA" required>
     </div>
-    <button type="button" onclick="generatePDF()">Generate PDF</button>
+    <button type="button" onclick="generateOrAlert()">Generate PDF</button>
 </form>
 
 <div id="label">
@@ -133,6 +133,14 @@
     const TICK_AREA_WIDTH_INCHES = 7;
     const TICK_AREA_HEIGHT_INCHES = 7.6;
     const TICK_LENGTH_INCHES = 0.33;
+
+    async function generateOrAlert() {
+        try {
+            await generatePDF();
+        } catch (ex) {
+            alert(ex.toString());
+        }
+    }
 
     // Function to generate and download the PDF
     async function generatePDF() {
@@ -335,7 +343,7 @@
         const unit = unitMatch ? unitMatch[0] : 'in';
 
         if (value === null || !unitsToInches.hasOwnProperty(unit)) {
-            throw new Error('Invalid input.');
+            throw new Error('Invalid input: ' + input);
         }
 
         // Convert the value to inches
