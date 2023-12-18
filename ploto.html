@@ -48,8 +48,10 @@
         <!-- Dynamically add circle inputs here -->
     </div>
     <div class="input-group">
-        <label for="targetFrame">Target Frame:</label>
-        <input type="text" id="targetFrame" name="targetFrame" value="48" required>
+        <label for="targetFrameWidth">Target Frame:</label>
+        <input type="text" id="targetFrameWidth" name="targetFrameWidth" value="48in" style="width:40px" required>
+        <label for="targetFrameHeight">x</label>
+        <input type="text" id="targetFrameHeight" name="targetFrameHeight" value="48in" style="width:40px" required>
     </div>
     <button type="button" onclick="generatePDF()">Generate PDF</button>
 </form>
@@ -229,14 +231,17 @@
         });
 
         // targetFrame rect
-        const targetFrameInches = parseFloat(document.getElementById('targetFrame').value);
-        const targetFramePoints = targetFrameInches * pageInchesPerTargetInch * 72;
+        const targetFrameWidth = parseUnitsToInches(document.getElementById('targetFrameWidth').value)
+            * pageInchesPerTargetInch * 72;
+        const targetFrameHeight = parseUnitsToInches(document.getElementById('targetFrameHeight').value)
+            * pageInchesPerTargetInch * 72;
+        console.log(targetFrameWidth, 'x', targetFrameHeight)
 
         page.drawRectangle({
-            x: widthPoints / 2 - targetFramePoints / 2,
-            y: heightPoints / 2 - targetFramePoints / 2,
-            width: targetFramePoints,
-            height: targetFramePoints,
+            x: widthPoints / 2 - targetFrameWidth / 2,
+            y: heightPoints / 2 - targetFrameHeight / 2,
+            width: targetFrameWidth,
+            height: targetFrameHeight,
             borderColor: rgb(0, 0, 0),
             borderWidth: 1
         });
@@ -269,7 +274,7 @@
         })
         page.drawText(bottomText, {
             x: labelX + labelPad,
-            y: labelY + labelH - topTextSize*2 - labelPad,
+            y: labelY + labelH - topTextSize * 2 - labelPad,
             size: bottomTextSize,
             color: rgb(0, 0, 0)
         })
