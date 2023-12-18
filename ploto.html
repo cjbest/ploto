@@ -57,13 +57,8 @@
 <script>
 
     /*
-    TODO:
-     - [X] Plot ticks (find trim rectangle size)
-     - [X] One ring darker
-     - [ ] Label
-     - [X] units -- inches or mm for target
-
      Nice to have:
+     - [ ] Make the label font nicer (Optima?)
      - [ ] Local storage of configurations?
      */
 
@@ -91,8 +86,8 @@
         radio.type = 'radio';
         radio.id = `aimingMark`;
         radio.name = `aimingMark`;
-        radio.value = i-1;
-        radio.checked = i===5; //default;
+        radio.value = i - 1;
+        radio.checked = i === 5; //default;
 
         inputGroup.appendChild(label);
         inputGroup.appendChild(input);
@@ -111,7 +106,8 @@
     // Function to generate and download the PDF
     async function generatePDF() {
         // Get form values
-        const rangeInches = parseUnitsToInches(document.getElementById('range').value);
+        const rangeInput = document.getElementById('range').value;
+        const rangeInches = parseUnitsToInches(rangeInput);
         const aimingMark = parseInt(document.querySelector(`input[name="aimingMark"]:checked`).value)
 
         const minuteScale = parseFloat(document.getElementById('minuteScale').value);
@@ -244,6 +240,40 @@
             borderColor: rgb(0, 0, 0),
             borderWidth: 1
         });
+
+
+        // label
+        const labelW = 1.0 * 72;
+        const labelH = 0.75 * 72;
+        const labelX = tickXEnd - labelW - tickL;
+        const labelY = tickYStart + tickL;
+        const labelPad = 4;
+        const topText = rangeInput;
+        const topTextSize = 18;
+        const bottomText = `${minuteScale.toFixed(2)}x true`
+        const bottomTextSize = 10;
+        page.drawRectangle({
+            x: labelX,
+            y: labelY,
+            width: labelW,
+            height: labelH,
+            color: rgb(1, 1, 1),
+            //borderColor: rgb(0, 0, 0),
+            //borderWidth: 1
+        })
+        page.drawText(topText, {
+            x: labelX + labelPad,
+            y: labelY + labelH - topTextSize - labelPad,
+            size: topTextSize,
+            color: rgb(0, 0, 0),
+        })
+        page.drawText(bottomText, {
+            x: labelX + labelPad,
+            y: labelY + labelH - topTextSize*2 - labelPad,
+            size: bottomTextSize,
+            color: rgb(0, 0, 0)
+        })
+
 
         // Serialize the PDF
         const pdfBytes = await pdfDoc.save();
